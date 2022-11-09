@@ -373,7 +373,7 @@ namespace apoj
             var response = httpClient.PostAsync("http://localhost:8080/Join", contentForm);
             System.IO.Stream stream = response.Result.Content.ReadAsStreamAsync().Result;
             System.IO.StreamReader sr = new System.IO.StreamReader(stream);
-            var fs = new FileStream("C:\\Users\\as\\Desktop\\Новая папка (3)\\song.zip", FileMode.Create);
+            var fs = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "song.zip"), FileMode.Create);
             byte[] buffer = new byte[4096];
             int byteread = 1;
             while (byteread != 0)
@@ -382,8 +382,8 @@ namespace apoj
                 fs.Write(buffer, 0, byteread); 
             }
             fs.Close();
-            string zipFile = "C:\\Users\\as\\Desktop\\Новая папка (3)\\song.zip"; // сжатый файл
-            string targetFolder = "C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка"; // папка, куда распаковывается файл
+            string zipFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "song.zip"); // сжатый файл
+            string targetFolder = AppDomain.CurrentDomain.BaseDirectory; // папка, куда распаковывается файл
             string[] files = Directory.GetFiles(targetFolder, "*.mp3");
             foreach (var file in files)
             {
@@ -562,6 +562,7 @@ namespace apoj
 
         private void button13_Click(object sender, EventArgs e)
         {
+            panel5.Visible = false;
             panel6.Visible = false;
             Play_button.Visible = true;
         }

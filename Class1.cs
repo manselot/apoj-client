@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using NAudio.Wave;
+using WaveFileManipulator;
 
 
 namespace apoj
@@ -20,13 +21,13 @@ namespace apoj
 
             WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(mp3);
                 
-            string wavepath = Path.Combine("C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка",Path.GetFileName(path));
+            string wavepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(path));
             wavepath = wavepath.Remove(wavepath.Length - 3);
             wavepath = wavepath + "wav";
             WaveFileWriter.CreateWaveFile(wavepath, pcm);
                 
             
-            string localFolder = "C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка\\reverse";
+            string localFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "\\reverse");
 
             string forwardsWavFilePath = wavepath;
             byte[] forwardsWavFileStreamByteArray = populateForwardsWavFileByteArray(forwardsWavFilePath);
