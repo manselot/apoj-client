@@ -21,13 +21,16 @@ namespace apoj
 
             WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(mp3);
                 
-            string wavepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(path));
+            string wavepath = Path.Combine("..\\", Path.GetFileName(path));
             wavepath = wavepath.Remove(wavepath.Length - 3);
             wavepath = wavepath + "wav";
             WaveFileWriter.CreateWaveFile(wavepath, pcm);
-                
-            
-            string localFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "\\reverse");
+
+            if (!Directory.Exists("..\\reverse"))
+            {
+                Directory.CreateDirectory("..\\reverse");
+            }
+            string localFolder = Path.Combine("..\\reverse");
 
             string forwardsWavFilePath = wavepath;
             byte[] forwardsWavFileStreamByteArray = populateForwardsWavFileByteArray(forwardsWavFilePath);

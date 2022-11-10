@@ -373,7 +373,7 @@ namespace apoj
             var response = httpClient.PostAsync("http://localhost:8080/Join", contentForm);
             System.IO.Stream stream = response.Result.Content.ReadAsStreamAsync().Result;
             System.IO.StreamReader sr = new System.IO.StreamReader(stream);
-            var fs = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "song.zip"), FileMode.Create);
+            var fs = new FileStream("..\\song.zip", FileMode.Create);
             byte[] buffer = new byte[4096];
             int byteread = 1;
             while (byteread != 0)
@@ -382,7 +382,7 @@ namespace apoj
                 fs.Write(buffer, 0, byteread); 
             }
             fs.Close();
-            string zipFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "song.zip"); // сжатый файл
+            string zipFile = Path.Combine("..\\", "song.zip"); // сжатый файл
             string targetFolder = AppDomain.CurrentDomain.BaseDirectory; // папка, куда распаковывается файл
             string[] files = Directory.GetFiles(targetFolder, "*.mp3");
             foreach (var file in files)
@@ -488,7 +488,7 @@ namespace apoj
             myTimer1.Tick += new EventHandler(TimerEventProcessor1);
             myTimer1.Interval = 1000;
             myTimer1.Start();
-            string[] files = Directory.GetFiles("C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка", "*.mp3");
+            string[] files = Directory.GetFiles("..\\", "*.mp3");
             label4.Text = Path.GetFileName(files[0]);
             songList = files;
             panel4.Visible = true;
@@ -513,7 +513,7 @@ namespace apoj
             
             
 
-            string[] files = Directory.GetFiles("C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка\\reverse");
+            string[] files = Directory.GetFiles("..\\reverse");
             countSong = files.Length;
 
             if (countSong == currentIndex)
