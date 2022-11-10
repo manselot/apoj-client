@@ -96,16 +96,17 @@ namespace apoj
                 Thread.Sleep(5000);
 
             }
-            if (panel5.InvokeRequired)
-            {
-                textBox2.Invoke((MethodInvoker)delegate {
-                    panel5.Visible = true;
-
-                });
-            }
+            
             if (host == false)
             {
-                panel5.Visible = true;
+
+                if (panel5.InvokeRequired)
+                {
+                    panel5.Invoke((MethodInvoker)delegate {
+                        panel5.Visible = true;
+
+                    });
+                }
                 if (button8.InvokeRequired)
                 {
                     button8.Invoke((MethodInvoker)delegate
@@ -155,12 +156,12 @@ namespace apoj
                     // Stops the timer.
                     exitFlag = true;
                     sec = 60;
-                    var files = Directory.GetFiles("C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка\\reverse");
+                    var files = Directory.GetFiles("..\\reverse");
                     foreach (var file in files)
                     {
                         File.Delete(file);
                     }
-                    var files1 = Directory.GetFiles("C:\\Users\\as\\Desktop\\Новая папка (3)\\Новая папка", "*.*", SearchOption.AllDirectories).Where(q => q.EndsWith(".mp3") || q.EndsWith(".wav"));
+                    var files1 = Directory.GetFiles("..\\", "*.*", SearchOption.AllDirectories).Where(q => q.EndsWith(".mp3") || q.EndsWith(".wav"));
                     foreach (var file in files1)
                     {
                         File.Delete(file);
@@ -356,6 +357,7 @@ namespace apoj
 
         private void button3_Click_1(object sender, EventArgs e)
         {
+            Directory.CreateDirectory("..\\reverse");
             host = false;
             listBox2.Items.Clear();
             idd = (int)listBox1.SelectedIndex;
@@ -488,7 +490,8 @@ namespace apoj
             myTimer1.Tick += new EventHandler(TimerEventProcessor1);
             myTimer1.Interval = 1000;
             myTimer1.Start();
-            string[] files = Directory.GetFiles("..\\", "*.mp3");
+            string[] files = Directory.GetFiles("..\\", "*.wav");
+            Thread.Sleep(2000);
             label4.Text = Path.GetFileName(files[0]);
             songList = files;
             panel4.Visible = true;
@@ -522,7 +525,7 @@ namespace apoj
             }
             else
             {
-                WMP.URL = files[currentIndex];
+                WMP.URL = Path.GetFullPath(files[currentIndex]);
                 currentIndex++;
             }
             
