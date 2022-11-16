@@ -15,7 +15,7 @@ namespace apoj
         const int _bitsPerByte = 8;
         static int _bytesPerSample;
 
-        internal static void Start(string path)
+        internal static void Start(string path,int i)
         {
             Mp3FileReader mp3 = new Mp3FileReader(path);
 
@@ -42,7 +42,7 @@ namespace apoj
             byte[] reversedWavFileStreamByteArray = populateReversedWavFileByteArray(forwardsWavFileStreamByteArray, startIndexOfDataChunk, _bytesPerSample);
 
             Random random = new Random();
-            int i = random.Next(1, 1000);
+            
             string str = i.ToString() + ".wav";
             string reversedWavFilePath = Path.Combine(localFolder,str );
             writeReversedWavFileByteArrayToFile(reversedWavFileStreamByteArray, reversedWavFilePath);

@@ -28,6 +28,7 @@ namespace apoj
 {
     public partial class Form1 : Form
     {
+        static string LobbyName = "";
         static int sec = 60;
         static int sec1 = 60;
         static int member1score = 0;
@@ -50,11 +51,13 @@ namespace apoj
 
         public Form1()
         {
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.WindowState = FormWindowState.Maximized;
+            /*this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.WindowState = FormWindowState.Maximized;*/
             InitializeComponent();
-            
-            
+            /*this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.WindowState = FormWindowState.Maximized;*/
+
+
 
 
         }
@@ -62,6 +65,15 @@ namespace apoj
         {
             public string name { get; set; } = "";
             public string username { get; set; } = "";
+        }
+        private void wait(){
+            if (panel8.InvokeRequired)
+            {
+                panel8.Invoke((MethodInvoker)delegate {
+                    panel8.Visible = true;
+
+                });
+            }
         }
         private void ff()
         {
@@ -100,10 +112,12 @@ namespace apoj
             if (host == false)
             {
 
+
                 if (panel5.InvokeRequired)
                 {
                     panel5.Invoke((MethodInvoker)delegate {
                         panel5.Visible = true;
+                        panel2.Visible = false;
 
                     });
                 }
@@ -145,6 +159,7 @@ namespace apoj
                     var response = httpClient.PostAsync("http://localhost:8080/Answer", contentForm);                   
                     sec = 60;
                     myTimer.Enabled = true;
+                    textBox4.Text = "";
                     button8.PerformClick();
                     
                    
@@ -153,9 +168,27 @@ namespace apoj
                 }
                 else
                 {
+                    panel8.Visible = true;
                     // Stops the timer.
+                    WMP.close();
+                    panel5.Visible = false;
+                    Thread.Sleep(1000);
+
                     exitFlag = true;
-                    sec = 60;
+                    HttpClient httpClient = new HttpClient();
+                    Dictionary<string, string> data = new Dictionary<string, string>
+                    {
+                        ["id"] = roomId,
+                        ["username"] = name,
+                        ["answer"] = textBox4.Text
+                    };
+                    // создаем объект HttpContent
+                    HttpContent contentForm = new FormUrlEncodedContent(data);
+                    // отправляем запрос
+                    var response = httpClient.PostAsync("http://localhost:8080/Answer", contentForm);
+                    sec = 60;                 
+                    Thread.Sleep(14000);
+                    panel8.Visible = false;
                     var files = Directory.GetFiles("..\\reverse");
                     foreach (var file in files)
                     {
@@ -171,6 +204,8 @@ namespace apoj
                     System.IO.Stream stream = resp.GetResponseStream();
                     System.IO.StreamReader sr = new System.IO.StreamReader(stream);
                     string[] s = sr.ReadToEnd().Split(',');
+ 
+                    
                     panel6.Visible = true;
                     if (listBox2.Items.Count == 1)
                     {
@@ -201,10 +236,17 @@ namespace apoj
             sec1--;
             if (sec1 == 0)
             {
-                if (countSong != currentIndex + 1)
+                if (countSong != currentIndex )
                 {
+                    
                     sec1 = 60;
-                    label4.Text = Path.GetFileName(songList[currentIndex]);
+                    string[] files = Directory.GetFiles(songDir);
+                    try
+                    {
+                        label4.Text = Path.GetFileName(Path.GetFileName(files[currentIndex + 1]));
+                    }
+                    catch { };
+                    label19.Text = Path.GetFileName(Path.GetFileName(files[currentIndex]));
                     System.Net.WebRequest reqGET = System.Net.WebRequest.Create(@"http://localhost:8080/GetAnswer/" + roomId);
                     System.Net.WebResponse resp = reqGET.GetResponse();
                     System.IO.Stream stream = resp.GetResponseStream();
@@ -228,12 +270,16 @@ namespace apoj
                         checkBox4.Text = s[3];
                     }
                     currentIndex++;
+                    if (countSong == currentIndex ) {
+                        sec1 = 10;                      
+                    }
 
 
 
                 }
                 else
                 {
+                    panel4.Visible = false;
                     HttpClient httpClient = new HttpClient();
                     Dictionary<string, string> data = new Dictionary<string, string>
                     {
@@ -274,6 +320,7 @@ namespace apoj
                     exitFlag = true;
                     myTimer1.Stop();
                     sec1 = 60;
+                    Thread.Sleep(2000);
                     httpClient = new HttpClient();
                     data = new Dictionary<string, string>
                     {            
@@ -304,18 +351,7 @@ namespace apoj
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            HttpClient httpClient = new HttpClient();
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                ["name"] = textBoxLobbyName.Text,
-                ["username"] = name,
-            };
-            // создаем объект HttpContent
-            HttpContent contentForm = new FormUrlEncodedContent(data);
-            // отправляем запрос
-            var response = httpClient.PostAsync("http://localhost:8080/CreateHost", contentForm);
-            string responseText = response.Result.Content.ReadAsStringAsync().Result;
-            roomId = responseText;
+            LobbyName = textBoxLobbyName.Text;
             panelCreateHost.Visible = true;
             panel7.Visible = false;
 
@@ -353,6 +389,7 @@ namespace apoj
                 songDir = folderDlg.SelectedPath;
                 Environment.SpecialFolder root = folderDlg.RootFolder;
             }
+            panel1.Visible = false;
         }
 
         private void button3_Click_1(object sender, EventArgs e)
@@ -372,6 +409,7 @@ namespace apoj
             // создаем объект HttpContent
             HttpContent contentForm = new FormUrlEncodedContent(data);
             // отправляем запрос
+            panel8.Visible = true;
             var response = httpClient.PostAsync("http://localhost:8080/Join", contentForm);
             System.IO.Stream stream = response.Result.Content.ReadAsStreamAsync().Result;
             System.IO.StreamReader sr = new System.IO.StreamReader(stream);
@@ -393,9 +431,11 @@ namespace apoj
             }
             ZipFile.ExtractToDirectory(zipFile, targetFolder);
             files = Directory.GetFiles(targetFolder, "*.mp3");
+            int i = 0; 
             foreach (var file in files)
             {
-                Reverser.Start(file);
+                Reverser.Start(file,i);
+                i++;
             }
 
             System.Net.WebRequest reqGET = System.Net.WebRequest.Create(@"http://localhost:8080/LobbyInfo/" + str );
@@ -405,7 +445,9 @@ namespace apoj
             string s = sr.ReadToEnd();
             listBox2.Items.AddRange(s.Split(','));
             listBox2.Items.RemoveAt(listBox2.Items.Count-1);
-            button7.Visible = true;
+            panel8.Visible = false;
+            panel1.Visible = false;
+            button7.Visible = false;
             panel2.Visible = true;
 
             System.Threading.Thread thr = new System.Threading.Thread(ff);
@@ -418,10 +460,10 @@ namespace apoj
             for (int i = 0; i < str.Length-1; i++)
             {
                 if (i % 2 == 0) {
-                    name += name + str[i] + ',';
+                    name = name + str[i] + ',';
                 }
                 else {
-                    idd += idd + str[i] + ",";
+                    idd = idd + str[i] + ",";
                 }
             }
            
@@ -448,6 +490,19 @@ namespace apoj
         {
             host = true;
             HttpClient httpClient = new HttpClient();
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                ["name"] = LobbyName,
+                ["username"] = name,
+            };
+            // создаем объект HttpContent
+            HttpContent contentForm = new FormUrlEncodedContent(data);
+            // отправляем запрос
+            var response = httpClient.PostAsync("http://localhost:8080/CreateHost", contentForm);
+            string responseText = response.Result.Content.ReadAsStringAsync().Result;
+            roomId = responseText;
+
+            httpClient = new HttpClient();
             var serverAddress = "http://localhost:8080/upload/"+roomId;
             // пути к файлам
             var files = songDir;
@@ -467,7 +522,7 @@ namespace apoj
             }
 
             // Отправляем файлы
-            var response = httpClient.PostAsync(serverAddress, multipartFormContent);
+            response = httpClient.PostAsync(serverAddress, multipartFormContent);
             panel2.Visible = true;
             button7.Visible = true;
             panelCreateHost.Visible = false;
@@ -478,23 +533,29 @@ namespace apoj
 
         private void button7_Click(object sender, EventArgs e)
         {
+            panel8.Visible=true;
             string str = roomId;
             System.Net.WebRequest reqGET = System.Net.WebRequest.Create(@"http://localhost:8080/Start/" + str);
             System.Net.WebResponse resp = reqGET.GetResponse();
             System.IO.Stream stream = resp.GetResponseStream();
             System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+            Thread.Sleep(1000);
 
-            panel4.Visible = true;
-            Thread.Sleep(8000);
+            panel4.Visible = true;         
+            panel2.Visible = false;
+            Thread.Sleep(9000);
+           
 
             myTimer1.Tick += new EventHandler(TimerEventProcessor1);
             myTimer1.Interval = 1000;
             myTimer1.Start();
-            string[] files = Directory.GetFiles("..\\", "*.wav");
+            string[] files = Directory.GetFiles(songDir);
             Thread.Sleep(2000);
             label4.Text = Path.GetFileName(files[0]);
             songList = files;
             panel4.Visible = true;
+            panel2.Visible = false;
+            panel8.Visible = false;
 
             while (exitFlag == false)
             {
@@ -544,18 +605,22 @@ namespace apoj
             if (checkBox1.Checked)
             {
                 member1score++;
+                checkBox1.Checked = false;
             }
             if (checkBox2.Checked)
             {
                 member2score++;
+                checkBox2.Checked = false;
             }
             if (checkBox3.Checked)
             {
                 member3score++;
+                checkBox3.Checked = false;
             }
             if (checkBox4.Checked)
             {
                 member4score++;
+                checkBox4.Checked = false;
             }
             checkBox1.Text = "ждем ответа";
             checkBox2.Text = "ждем ответа";
@@ -568,6 +633,129 @@ namespace apoj
             panel5.Visible = false;
             panel6.Visible = false;
             Play_button.Visible = true;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            panel7.Visible = false;
+            CreateHost.Visible = true;
+            JoinLobby.Visible = true;
+            HttpClient httpClient = new HttpClient();
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                ["id"] = roomId
+            };
+            // создаем объект HttpContent
+            HttpContent contentForm = new FormUrlEncodedContent(data);
+            // отправляем запрос
+            var response = httpClient.PostAsync("http://localhost:8080/CloseHost", contentForm);
+        }
+
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+            if (host == true)
+            {
+                HttpClient httpClient = new HttpClient();
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    ["id"] = roomId
+                };
+                // создаем объект HttpContent
+                HttpContent contentForm = new FormUrlEncodedContent(data);
+                // отправляем запрос
+                var response = httpClient.PostAsync("http://localhost:8080/DeleteLobby", contentForm);
+            }
+            else 
+            {
+                var files = Directory.GetFiles("..\\reverse");
+                foreach (var file in files)
+                {
+                    File.Delete(file);
+                }
+                var files1 = Directory.GetFiles("..\\", "*.*", SearchOption.AllDirectories).Where(q => q.EndsWith(".mp3") || q.EndsWith(".wav"));
+                foreach (var file in files1)
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            HttpClient httpClient = new HttpClient();
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                ["id"] = roomId
+            };
+            // создаем объект HttpContent
+            HttpContent contentForm = new FormUrlEncodedContent(data);
+            // отправляем запрос
+            var response = httpClient.PostAsync("http://localhost:8080/CloseHost", contentForm);
+            CreateHost.Visible = true;
+            JoinLobby.Visible = true;
+            panelCreateHost.Visible = false;
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            panel1.Visible = false;
+            CreateHost.Visible = true;
+            JoinLobby.Visible = true;
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel6_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel4_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label16_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
